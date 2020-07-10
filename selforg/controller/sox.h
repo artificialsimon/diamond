@@ -110,6 +110,7 @@ public:
 
   /* some direct access functions (unsafe!) */
   virtual matrix::Matrix getA();
+  /*virtual matrix::Matrix * getpA();*/
   virtual void setA(const matrix::Matrix& A);
   virtual matrix::Matrix getC();
   virtual void setC(const matrix::Matrix& C);

@@ -1,3 +1,5 @@
+# Last time I build it ubuntu:latest was 18.04.1. File might fail in the future
+# if so, update next line to that version
 FROM ubuntu:latest
 
 RUN apt-get -y update && apt-get install -y \

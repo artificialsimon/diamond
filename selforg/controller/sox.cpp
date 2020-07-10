@@ -137,6 +137,10 @@ matrix::Matrix Sox::getA(){
   return A;
 }
 
+//matrix::Matrix* Sox::getpA(){
+//return &A;
+//}
+
 void Sox::setA(const matrix::Matrix& _A){
   assert(A.getM() == _A.getM() && A.getN() == _A.getN());
   A=_A;
