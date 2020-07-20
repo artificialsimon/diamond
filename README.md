@@ -1,6 +1,6 @@
 # The DIAMOND model: Deep recurrent neural networks for self-organising robot control
 
-Simon C. Smith, Richard Dharmadi1, Calum Imrie1, Bailu Si and J. Michael Herrmann
+Simon C. Smith, Richard Dharmadi, Calum Imrie, Bailu Si and J. Michael Herrmann
 
 Implementation of the DIAMOND model in the LpzRobot simulator.
 
