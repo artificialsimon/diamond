@@ -1,3 +1,13 @@
+# The DIAMOND model: Deep recurrent neural networks for self-organising robot control
+
+Simon C. Smith, Richard Dharmadi, Calum Imrie, Bailu Si and J. Michael Herrmann
+
+Implementation of the DIAMOND model in the LpzRobot simulator.
+
+The controller and simulations can be found on /ode_robots/simulations/diamond/
+
+Follow the LpzRobots original instructions to install the simulator.
+
 # LPZRobots -- a simulator for robotic experiments #
 
 This is a 3D physics simulator that comes with a collection of algorithms, simulations, and tools
