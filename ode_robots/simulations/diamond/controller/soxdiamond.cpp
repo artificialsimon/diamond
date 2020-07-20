@@ -169,6 +169,10 @@ matrix::Matrix SoxDiamond::geth(){
   return h;
 }
 
+matrix::Matrix SoxDiamond::getb(){
+  return b;
+}
+
 void SoxDiamond::seth(const matrix::Matrix& _h){
   assert(h.getM() == _h.getM() && h.getN() == _h.getN());
   h=_h;
@@ -188,7 +192,6 @@ void SoxDiamond::step(const sensor* x_, int number_sensors,
   // update step counter
   t++;
 };
-
 
 // performs one step without learning. Calulates motor commands from sensor inputs.
 void SoxDiamond::stepNoLearning(const sensor* x_, int number_sensors,
@@ -220,6 +223,58 @@ void SoxDiamond::stepNoLearning(const sensor* x_, int number_sensors,
   t++;
 };
 
+// Diamond Main Variant step
+void SoxDiamond::stepMV(const sensor* x_, int number_sensors,
+                       motor* y_, int number_motors, SoxDiamond* sox_l1){
+  stepNoLearningMV(x_, number_sensors, y_, number_motors, sox_l1);
+  if(t<=buffersize) return;
+  t--; // stepNoLearning increases the time by one - undo here
+
+  // learn controller and model
+  if(epsC!=0 || epsA!=0)
+    learn();
+
+  // update step counter
+  t++;
+};
+
+
+
+// Diamond Main variant
+void SoxDiamond::stepNoLearningMV(const sensor* x_, int number_sensors,
+                                 motor* y_, int number_motors, SoxDiamond* sox_l1){
+  assert((unsigned)number_sensors <= this->number_sensors
+         && (unsigned)number_motors <= this->number_motors);
+
+  x.set(number_sensors,1,x_); // store sensor values
+
+  // averaging over the last s4avg values of x_buffer
+  conf.steps4Averaging = ::clip(conf.steps4Averaging,1,buffersize-1);
+  if(conf.steps4Averaging > 1)
+    x_smooth += (x - x_smooth)*(1.0/conf.steps4Averaging);
+  else
+    x_smooth = x;
+
+  x_buffer[t%buffersize] = x_smooth; // we store the smoothed sensor value
+
+  // calculate controller values based on current input values (smoothed)
+  Matrix y =   (C*(
+                   x_smooth + (v_avg*creativity) + // x_0
+                   ((C^T)*((sox_l1->getLastMotorValues()).map(g_inv) -h)) * 0.15 // x^tilde_1
+                  )
+                   //* 0.5)
+                   //).map(sqrt_norm)
+                + h).map(g);
+  //std::cout << "in " << y << std::endl;
+  // Put new output vector in ring buffer y_buffer
+  y_buffer[t%buffersize] = y;
+
+  // convert y to motor*
+  y.convertToBuffer(y_, number_motors);
+
+  // update step counter
+  t++;
+};
 
 void SoxDiamond::motorBabblingStep(const sensor* x_, int number_sensors,
                             const motor* y_, int number_motors){

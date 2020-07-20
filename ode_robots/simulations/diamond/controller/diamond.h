@@ -55,7 +55,7 @@ public:
 
   static DiamondConf getDefaultConf(){
     DiamondConf conf;
-    conf.n_layers = 1;
+    conf.n_layers = 2;
     conf.base_controller_name = "Sox";
     conf.someInternalParams = true;
     return conf;
@@ -161,6 +161,13 @@ protected:
     double k=tanh(z);
     return 1.0 - k*k;
   };
+
+  /// inverse of neuron activation
+  static double g_inv(double z)
+  {
+    return atanh(clip(.99, z));
+  };
+
 
   /// function that clips the second argument to the interval [-first,first]
   static double clip(double r, double x){

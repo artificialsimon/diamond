@@ -93,11 +93,16 @@ public:
   /// performs one step (includes learning).
   /// Calulates motor commands from sensor inputs.
   virtual void step(const sensor* , int number_sensors, motor* , int number_motors);
+  // Diamond Main Variant step
+  virtual void stepMV(const sensor* , int number_sensors, motor* , int number_motors, SoxDiamond*);
 
 
   /// performs one step without learning. Calulates motor commands from sensor inputs.
   virtual void stepNoLearning(const sensor* , int number_sensors,
                               motor* , int number_motors);
+
+  virtual void stepNoLearningMV(const sensor* , int number_sensors,
+                              motor* , int number_motors, SoxDiamond*);
 
   /// called during babbling phase
   virtual void motorBabblingStep(const sensor* , int number_sensors,
@@ -117,6 +122,7 @@ public:
   virtual void setC(const matrix::Matrix& C);
   virtual matrix::Matrix geth();
   virtual void seth(const matrix::Matrix& h);
+  virtual matrix::Matrix getb();
 
   /** returns the prediction of sensors for next time step */
   virtual sensor* getPredictionState();
@@ -189,6 +195,20 @@ protected:
     double k=tanh(z);
     return 1.0 - k*k;
   };
+  
+  /// inverse of neuron activation
+  static double g_inv(double z)
+  {
+    return atanh(clip(.99, z));
+  };
+
+
+  /// one over sqrt 2 norm
+  static double sqrt_norm(double z)
+  {
+    return (z / sqrt(2.0));
+  };
+
 
   /// function that clips the second argument to the interval [-first,first]
   static double clip(double r, double x){

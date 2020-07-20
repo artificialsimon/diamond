@@ -60,7 +60,7 @@ public:
     // push controller in global list of configurables
     DiamondConf diamond_conf;
     diamond_conf = Diamond::getDefaultConf();
-    diamond_conf.n_layers = 1;
+    diamond_conf.n_layers = 5;
     controller = new Diamond(diamond_conf);
     
     controller->setParam("epsA",0.3); // model learning rate

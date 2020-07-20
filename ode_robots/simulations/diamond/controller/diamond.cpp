@@ -92,30 +92,56 @@ void Diamond::init(int sensornumber, int motornumber, RandGen* randGen){
 // performs one step (includes learning). Calculates motor commands from sensor inputs.
 void Diamond::step(const sensor* x_, int number_sensors,
                        motor* y_, int number_motors){
-  motor y_world[number_motors];
-  for (int i = 0; i < conf.n_layers; i++) {
-    internal_layer[i]->step(x_, number_sensors, y_, number_motors);
-    x_ = internal_layer[i]->getPredictionState();
-    if (i == 0) {
-      std::copy(y_, y_ + number_motors, y_world);
+  if (conf.n_layers == 1) {  // No Diamond, only HK
+      internal_layer[0]->step(x_, number_sensors, y_, number_motors);
+  } 
+  else {
+    Matrix x_l;  // Sensor values to be used in stepMV
+    for (int i = 0; i < conf.n_layers; i++) {
+      if (i == 0) {
+        x.set(number_sensors,1,x_); // x^prime_0 
+        x_l = x;  // First layer it is copy
+      }
+      else if (i == 1) {
+        x.set(number_sensors,1,x_); // x^prime_0 
+        x_l = (internal_layer[i-1]->getC()^T) * (
+            ((internal_layer[i-1]->getA()^T) * (x - internal_layer[i-1]->getb())).map(g_inv) - internal_layer[i-1]->geth());
+      }
+      else {
+        // Internal world step
+        matrix::Matrix internal_x = internal_layer[i]->getA() 
+          * internal_layer[i]->getLastMotorValues()
+          + internal_layer[i]->getb();  // x^prime_i
+        x_l = (internal_layer[i-1]->getC()^T) *
+          (
+           ((internal_layer[i-1]->getA()^T) *
+            (internal_x - internal_layer[i-1]->getb())
+            ).map(g_inv)
+           - internal_layer[i-1]->geth()
+           );
+      }
+      sensor x_pw[number_sensors];
+      x_l.convertToBuffer(x_pw, number_sensors);
+      motor y_discard[number_motors];
+      if (i < conf.n_layers - 1) {
+        internal_layer[i]->stepMV(x_pw, number_sensors, y_discard, number_motors,
+            internal_layer[i+1]);
+        if (i == 0) {
+          for (int j = 0; j < number_motors; j++)
+            y_[j] = y_discard[j]; 
+        }
+      }
+      else {
+        // Last layer is only HK for motors command
+        internal_layer[i]->step(x_pw, number_sensors, y_discard, number_motors);
+      }
     }
   }
-  std::copy(y_world, y_world + number_motors, y_);
-  // TODO this is only for i == 1 
-  //if(t<=buffersize) return;
-  //t--; // stepNoLearning increases the time by one - undo here
-
-  // learn controller and model
-
-  // update step counter
   t++;
 };
 
 
 SoxDiamond* Diamond::make_layer(string name){
-  //if (name == "SoxDiamond") {
-  //return new SoxDiamond();
-  //}
   return new SoxDiamond();
 }
 
