@@ -109,9 +109,9 @@ void Diamond::step(const sensor* x_, int number_sensors,
       }
       else {
         // Internal world step
-        matrix::Matrix internal_x = internal_layer[i]->getA() 
-          * internal_layer[i]->getLastMotorValues()
-          + internal_layer[i]->getb();  // x^prime_i
+        matrix::Matrix internal_x = internal_layer[i-2]->getA() 
+          * internal_layer[i-2]->getLastMotorValues()
+          + internal_layer[i-2]->getb();  // x^prime_i
         x_l = (internal_layer[i-1]->getC()^T) *
           (
            ((internal_layer[i-1]->getA()^T) *
